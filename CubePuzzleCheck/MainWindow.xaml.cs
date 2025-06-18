@@ -15,7 +15,7 @@ namespace CubePuzzle
         private Point _lastMousePosition;
         private bool _isRotating = false;
         private Random _random = new Random();
-        private List<Point3D> _targetCubes = new List<Point3D>(); // Stores initial puzzle for solution checking
+        private List<Point3D> _targetCubes = new List<Point3D>();
         private List<Point3D> _userCubes = new List<Point3D>();
         private int _maxCubes = 4; // Maximum number of cubes in the puzzle
         private GeometryModel3D _previewCube;
@@ -97,8 +97,8 @@ namespace CubePuzzle
             MainModelGroup.Children.Add(linesModel);
             MainModelGroup.Children.Add(new AmbientLight(Color.FromRgb(255, 255, 255)));
 
-            // Generate target puzzle with random cubes
-            int numCubes = _random.Next(4, _maxCubes + 1); // Ensure at least 4 cubes for removal/addition
+            // Generate random cubes with vertical or horizontal connections, up to _maxCubes
+            int numCubes = _random.Next(2, _maxCubes + 1); // From 2 to _maxCubes (5)
             int startX = _random.Next(0, 4);
             int startZ = _random.Next(0, 4);
             _targetCubes.Add(new Point3D(startX, 0, startZ));
@@ -128,7 +128,7 @@ namespace CubePuzzle
                         for (int dz = -1; dz <= 1; dz++)
                         {
                             if (dx == 0 && dz == 0) continue;
-                            if (dx != 0 && dz != 0) continue; // Only allow straight neighbors
+                            if (dx != 0 && dz != 0) continue; // Only allow straight neighbors (not diagonal)
                             int newX = x + dx;
                             int newZ = z + dz;
                             if (newX >= 0 && newX < 4 && newZ >= 0 && newZ < 4 &&
@@ -145,7 +145,6 @@ namespace CubePuzzle
                     _targetCubes.Add(new Point3D(pos.x, pos.y, pos.z));
                 }
             }
-
             // Create user cubes by copying target cubes
             _userCubes.AddRange(_targetCubes);
 
@@ -226,6 +225,7 @@ namespace CubePuzzle
                 MainModelGroup.Children.Add(wireframe);
             }
 
+
             // Update preview cube position
             if (_userCubes.Any())
             {
@@ -248,7 +248,7 @@ namespace CubePuzzle
             FrontViewCanvas.Children.Clear();
             LeftViewCanvas.Children.Clear();
 
-            // Calculate 2D projections based on target cubes
+            // Calculate 2D projections
             var views = Calculate2DViews();
 
             // Draw Top View (X vs Z)
@@ -587,7 +587,8 @@ namespace CubePuzzle
             // For y > 0, require a cube directly beneath at (x, y-1, z)
             if (y > 0)
             {
-                return _userCubes.Any(p => (int)p.X == x && (int)p.Y == y - 1 && (int)p.Z == z);
+                return _userCubes.Any(p => (int)p.X == x && (int)p.Y == y - 1 && (int)p.Z == z) ||
+                       _targetCubes.Any(p => (int)p.X == x && (int)p.Y == y - 1 && (int)p.Z == z);
             }
 
             // For y = 0, allow placement on the platform
@@ -599,8 +600,9 @@ namespace CubePuzzle
             double closestT = double.MaxValue;
             (int x, int y, int z)? result = null;
 
-            // Check intersection with each cube's top face
-            foreach (var cube in _userCubes)
+            // Check intersection with each cube's top face (including _targetCubes and _userCubes)
+            var allCubes = _userCubes.Concat(_targetCubes).ToList();
+            foreach (var cube in allCubes)
             {
                 int x = (int)cube.X;
                 int y = (int)cube.Y;
@@ -859,7 +861,7 @@ namespace CubePuzzle
             int y = 0; // Default to ground
 
             // Check if there's a cube directly beneath to stack on top
-            var cubesAtXZ = _userCubes.Where(p => (int)p.X == x && (int)p.Z == z);
+            var cubesAtXZ = _userCubes.Concat(_targetCubes).Where(p => (int)p.X == x && (int)p.Z == z);
             if (cubesAtXZ.Any())
             {
                 y = (int)cubesAtXZ.Max(p => p.Y) + 1;
@@ -933,6 +935,12 @@ namespace CubePuzzle
 
         private void CheckSolution_Click(object sender, RoutedEventArgs e)
         {
+            if (_userCubes.Count != _targetCubes.Count)
+            {
+                MessageBox.Show("Решение неверно. Количество кубов не совпадает.");
+                return;
+            }
+
             // Normalize both sets of cube positions
             var normalizedTargetCubes = NormalizeCubePositions(_targetCubes);
             var normalizedUserCubes = NormalizeCubePositions(_userCubes);
@@ -991,3 +999,4 @@ namespace CubePuzzle
         }
     }
 }
+//
