@@ -1,17 +1,18 @@
-﻿<Window x:Class="CubePuzzle.MainWindow"
+﻿<Window x:Class="CubePuzzleCheck.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Cube Puzzle" Height="600" Width="800">
-    <Grid>
+    <Grid Margin="10">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="1*"/>
+
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="3*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Main 3D View -->
         <Viewport3D x:Name="MainViewport" Grid.Column="0" MouseDown="MainViewport_MouseDown">
             <Viewport3D.Camera>
-                <PerspectiveCamera Position="5,5,5" LookDirection="-5,-5,-5" UpDirection="0,1,0" FieldOfView="60"/>
+                <PerspectiveCamera />
+                <!-- <PerspectiveCamera Position="2, 0, 2" LookDirection="0, -10, -8" UpDirection="0,1,0" FieldOfView="60"/> -->
             </Viewport3D.Camera>
             <ModelVisual3D>
                 <ModelVisual3D.Content>
@@ -23,46 +24,177 @@
             </ModelVisual3D>
         </Viewport3D>
 
-        <!-- Side Views -->
         <StackPanel Grid.Column="1">
-            <TextBlock Text="Вид сверху" Margin="5"/>
-            <Canvas x:Name="TopViewCanvas" Width="100" Height="100" Background="White">
-                <Canvas.Resources>
-                    <Style TargetType="Rectangle">
-                        <Setter Property="Width" Value="25"/>
-                        <Setter Property="Height" Value="25"/>
-                        <Setter Property="Fill" Value="Yellow"/>
-                        <Setter Property="Stroke" Value="Black"/>
-                    </Style>
-                </Canvas.Resources>
-            </Canvas>
 
-            <TextBlock Text="Вид слева" Margin="5"/>
-            <Canvas x:Name="FrontViewCanvas" Width="100" Height="100" Background="White">
-                <Canvas.Resources>
-                    <Style TargetType="Rectangle">
-                        <Setter Property="Width" Value="25"/>
-                        <Setter Property="Height" Value="25"/>
-                        <Setter Property="Fill" Value="Yellow"/>
-                        <Setter Property="Stroke" Value="Black"/>
-                    </Style>
-                </Canvas.Resources>
-            </Canvas>
+            <Grid Margin="10">
+                <Grid.ColumnDefinitions>
 
-            <TextBlock Text="Вид спереди" Margin="5"/>
-            <Canvas x:Name="LeftViewCanvas" Width="100" Height="100" Background="White">
-                <Canvas.Resources>
-                    <Style TargetType="Rectangle">
-                        <Setter Property="Width" Value="25"/>
-                        <Setter Property="Height" Value="25"/>
-                        <Setter Property="Fill" Value="Yellow"/>
-                        <Setter Property="Stroke" Value="Black"/>
-                    </Style>
-                </Canvas.Resources>
-            </Canvas>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Viewbox Grid.Column="0" VerticalAlignment="Top" Stretch="Uniform" Margin="10">
+                    <Border Background="WhiteSmoke" Padding="2.5" CornerRadius="4" BorderBrush="#ccc" BorderThickness="1">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Вид сверху" Margin="5" />
+                            <Canvas x:Name="TopViewCanvas" Width="100" Height="100" Background="White">
+                                <Canvas.Resources>
+                                    <Style TargetType="Rectangle">
+                                        <Setter Property="Width" Value="25"/>
+                                        <Setter Property="Height" Value="25"/>
+                                        <Setter Property="Fill" Value="Yellow"/>
+                                        <Setter Property="Stroke" Value="Black"/>
+                                    </Style>
+                                </Canvas.Resources>
+                            </Canvas>
 
-            <Button Content="Проверить" Click="CheckSolution_Click" Margin="5"/>
-            <Button Content="Новая задача" Click="GenerateNewPuzzle" Margin="5"/>
+                        </StackPanel>
+                    </Border>
+                </Viewbox>
+                <Viewbox Grid.Column="1" VerticalAlignment="Top" Stretch="Uniform" Margin="10">
+                    <Border Background="WhiteSmoke" Padding="2.5" CornerRadius="4" BorderBrush="#ccc" BorderThickness="1">
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Вид слева" Margin="5"/>
+                            <Canvas x:Name="FrontViewCanvas" Width="100" Height="100" Background="White">
+                                <Canvas.Resources>
+                                    <Style TargetType="Rectangle">
+                                        <Setter Property="Width" Value="25"/>
+                                        <Setter Property="Height" Value="25"/>
+                                        <Setter Property="Fill" Value="Yellow"/>
+                                        <Setter Property="Stroke" Value="Black"/>
+                                    </Style>
+                                </Canvas.Resources>
+                            </Canvas>
+
+                        </StackPanel>
+                    </Border>
+                </Viewbox>
+                <Viewbox Grid.Column="2" VerticalAlignment="Top" Stretch="Uniform" Margin="10">
+                    <Border Background="WhiteSmoke" Padding="2.5" CornerRadius="4" BorderBrush="#ccc" BorderThickness="1">
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Вид спереди" Margin="5"/>
+                            <Canvas x:Name="LeftViewCanvas" Width="100" Height="100" Background="White">
+                                <Canvas.Resources>
+                                    <Style TargetType="Rectangle">
+                                        <Setter Property="Width" Value="25"/>
+                                        <Setter Property="Height" Value="25"/>
+                                        <Setter Property="Fill" Value="Yellow"/>
+                                        <Setter Property="Stroke" Value="Black"/>
+                                    </Style>
+                                </Canvas.Resources>
+                            </Canvas>
+
+                        </StackPanel>
+                    </Border>
+                </Viewbox>
+            </Grid>
+            <Grid Margin="0,10,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+
+                </Grid.ColumnDefinitions>
+                <Button         Content="✅ Проверить" Grid.Column="0"
+Margin="5"
+Background="DarkGreen"
+Foreground="White"
+FontWeight="SemiBold"
+BorderThickness="0"
+Cursor="Hand"
+Click="CheckSolution_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+            Background="{TemplateBinding Background}"
+            CornerRadius="2"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="LightGreen"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="Green"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button         Content="🔄 Заново" Grid.Column="1"
+Margin="5"
+Background="MediumBlue"
+Foreground="White"
+FontWeight="SemiBold"
+BorderThickness="0"
+Cursor="Hand"
+Click="GenerateNewPuzzle">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+            Background="{TemplateBinding Background}"
+            CornerRadius="2"
+            BorderBrush="{TemplateBinding BorderBrush}"
+            BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="RoyalBlue"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="Navy"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button Grid.Column="2"
+        Content="❌ Выход"
+        Margin="5"
+        Background="DarkRed"
+        Foreground="White"
+        FontWeight="SemiBold"
+        BorderThickness="0"
+        Cursor="Hand"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        Click="ExitButton_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border"
+Background="{TemplateBinding Background}"
+CornerRadius="2"
+BorderBrush="{TemplateBinding BorderBrush}"
+BorderThickness="{TemplateBinding BorderThickness}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="PaleVioletRed"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="Red"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.5"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>

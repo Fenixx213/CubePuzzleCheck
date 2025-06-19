@@ -8,7 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 
-namespace CubePuzzle
+namespace CubePuzzleCheck
 {
     public partial class MainWindow : Window
     {
@@ -23,14 +23,49 @@ namespace CubePuzzle
         private int _previewX, _previewY, _previewZ;
         private List<GeometryModel3D> _debugMarkers = new List<GeometryModel3D>();
         private Dictionary<Point3D, (GeometryModel3D cube, GeometryModel3D wireframe)> _cubeModels = new Dictionary<Point3D, (GeometryModel3D, GeometryModel3D)>(); // Track cube models
+        private double _theta = Math.PI; // Azimuth (horizontal angle)
+        private double _phi = Math.PI / 2;   // Elevation (vertical angle)
+        private readonly double _radius = 10; // Distance from camera to origin
+        private readonly double _rotationSpeed = 0.005; // Adjusted for smoother camera rotation
 
         public MainWindow()
         {
             InitializeComponent();
             InitializePreviewCube();
+            SetupCamera();
             GenerateNewPuzzle(null, null); // Generate initial puzzle
             MainViewport.MouseMove += MainViewport_MouseMove;
             MainViewport.SizeChanged += (s, e) => UpdateViewportSize(); // Handle viewport resizing
+        }
+
+        private void SetupCamera()
+        {
+            var camera = MainViewport.Camera as PerspectiveCamera;
+            if (camera != null)
+            {
+                camera.Position = new Point3D(0, 0, _radius);
+                camera.LookDirection = new Vector3D(0, 0, -_radius);
+                camera.UpDirection = new Vector3D(0, 1, 0);
+                camera.FieldOfView = 60;
+                UpdateCameraPosition();
+            }
+        }
+
+        private void UpdateCameraPosition()
+        {
+            var camera = MainViewport.Camera as PerspectiveCamera;
+            if (camera == null) return;
+
+            // Clamp phi to avoid flipping at the poles
+            _phi = Math.Max(0.1, Math.Min(Math.PI - 0.1, _phi));
+
+            // Convert spherical coordinates to Cartesian coordinates
+            double x = -_radius * Math.Sin(_phi) * Math.Cos(_theta);
+            double y = _radius * Math.Cos(_phi);
+            double z = _radius * Math.Sin(_phi) * Math.Sin(_theta);
+
+            camera.Position = new Point3D(x + 2, y + 3, z);
+            camera.LookDirection = new Vector3D(-x, -y - 3, -z + 2);
         }
 
         private void InitializePreviewCube()
@@ -224,8 +259,6 @@ namespace CubePuzzle
                 MainModelGroup.Children.Add(cube);
                 MainModelGroup.Children.Add(wireframe);
             }
-
-
             // Update preview cube position
             if (_userCubes.Any())
             {
@@ -384,16 +417,11 @@ namespace CubePuzzle
                 double deltaX = currentPosition.X - _lastMousePosition.X;
                 double deltaY = currentPosition.Y - _lastMousePosition.Y;
 
-                var camera = MainViewport.Camera as PerspectiveCamera;
-                if (camera != null)
-                {
-                    var transform = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(0, 1, 0), deltaX / 2));
-                    var transform2 = new RotateTransform3D(new AxisAngleRotation3D(new Vector3D(1, 0, 0), deltaY / 2));
-                    camera.Position = transform.Transform(camera.Position);
-                    camera.Position = transform2.Transform(camera.Position);
-                    camera.LookDirection = new Vector3D(-camera.Position.X, -camera.Position.Y, -camera.Position.Z);
-                }
+                // Update angles for horizontal (theta) and vertical (phi) rotation
+                _theta -= deltaX * _rotationSpeed;
+                _phi -= deltaY * _rotationSpeed;
 
+                UpdateCameraPosition();
                 _lastMousePosition = currentPosition;
             }
         }
@@ -584,15 +612,17 @@ namespace CubePuzzle
             if (_userCubes.Any(p => (int)p.X == x && (int)p.Y == y && (int)p.Z == z))
                 return false;
 
-            // For y > 0, require a cube directly beneath at (x, y-1, z)
-            if (y > 0)
+            // Allow placement only on the ground (y=0) or directly on top of an existing cube
+            if (y == 0)
             {
+                return true; // Ground placement is always valid
+            }
+            else
+            {
+                // Require a cube directly beneath at (x, y-1, z)
                 return _userCubes.Any(p => (int)p.X == x && (int)p.Y == y - 1 && (int)p.Z == z) ||
                        _targetCubes.Any(p => (int)p.X == x && (int)p.Y == y - 1 && (int)p.Z == z);
             }
-
-            // For y = 0, allow placement on the platform
-            return y == 0;
         }
 
         private (int x, int y, int z)? GetCubeTopIntersection(Ray3D ray)
@@ -600,9 +630,8 @@ namespace CubePuzzle
             double closestT = double.MaxValue;
             (int x, int y, int z)? result = null;
 
-            // Check intersection with each cube's top face (including _targetCubes and _userCubes)
-            var allCubes = _userCubes.Concat(_targetCubes).ToList();
-            foreach (var cube in allCubes)
+            // Check intersection with each cube's top face (using only _userCubes)
+            foreach (var cube in _userCubes)
             {
                 int x = (int)cube.X;
                 int y = (int)cube.Y;
@@ -865,15 +894,21 @@ namespace CubePuzzle
             if (cubesAtXZ.Any())
             {
                 y = (int)cubesAtXZ.Max(p => p.Y) + 1;
+                // Only return this position if it's valid (has support below)
+                if (IsValidPlacement(x, y, z))
+                {
+                    return (x, y, z);
+                }
             }
 
-            // Only allow placement if it's valid (on ground or on top of another cube)
-            if (IsValidPlacement(x, y, z))
+            // Return ground level as fallback, but only if valid
+            if (IsValidPlacement(x, 0, z))
             {
-                return (x, y, z);
+                return (x, 0, z);
             }
-            // If not valid, return ground level as fallback
-            return (x, 0, z);
+
+            // If no valid placement, return a default position (0,0,0) which will be checked later
+            return (0, 0, 0);
         }
 
         public static int Clamp(int value, int min, int max)
@@ -950,7 +985,10 @@ namespace CubePuzzle
 
             MessageBox.Show(isCorrect ? "Решение верно!" : "Решение неверно. Попробуйте снова.");
         }
-
+        private void ExitButton_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
         private List<Point3D> NormalizeCubePositions(List<Point3D> cubes)
         {
             if (cubes == null || cubes.Count == 0)
@@ -999,4 +1037,3 @@ namespace CubePuzzle
         }
     }
 }
-//
