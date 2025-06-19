@@ -1,10 +1,9 @@
 ﻿<Window x:Class="CubePuzzleCheck.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Cube Puzzle" Height="600" Width="800">
+        Title="Cube Puzzle" Height="720" Width="1280">
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
-
             <ColumnDefinition Width="4*" />
             <ColumnDefinition Width="3*" />
         </Grid.ColumnDefinitions>
@@ -25,7 +24,11 @@
         </Viewport3D>
 
         <StackPanel Grid.Column="1">
-
+            <TextBlock Text="Исправить конструкцию из кубиков" FontSize="30" FontWeight="Bold" TextWrapping="Wrap" Foreground="#1f3c88"/>
+            <TextBlock x:Name="StatusText" Text="" FontSize="26"  FontWeight="SemiBold" Foreground="Crimson" TextWrapping="Wrap" Margin="5,0,0,5"/>
+            <TextBlock FontSize="20" Foreground="Black" TextAlignment="Center" TextWrapping="Wrap"> 
+Исправьте конструкцию из кубиков на правильный вариант. На левую клавишу мыши - создает кубик, правая клавиша мыши - движение камерой и удаление кубика
+            </TextBlock>
             <Grid Margin="10">
                 <Grid.ColumnDefinitions>
 
@@ -36,7 +39,7 @@
                 <Viewbox Grid.Column="0" VerticalAlignment="Top" Stretch="Uniform" Margin="10">
                     <Border Background="WhiteSmoke" Padding="2.5" CornerRadius="4" BorderBrush="#ccc" BorderThickness="1">
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Вид сверху" Margin="5" />
+                            
                             <Canvas x:Name="TopViewCanvas" Width="100" Height="100" Background="White">
                                 <Canvas.Resources>
                                     <Style TargetType="Rectangle">
@@ -47,14 +50,14 @@
                                     </Style>
                                 </Canvas.Resources>
                             </Canvas>
-
+                            <TextBlock Text="Вид сверху" Margin="5" />
                         </StackPanel>
                     </Border>
                 </Viewbox>
                 <Viewbox Grid.Column="1" VerticalAlignment="Top" Stretch="Uniform" Margin="10">
                     <Border Background="WhiteSmoke" Padding="2.5" CornerRadius="4" BorderBrush="#ccc" BorderThickness="1">
                         <StackPanel Grid.Column="1">
-                            <TextBlock Text="Вид слева" Margin="5"/>
+                           
                             <Canvas x:Name="FrontViewCanvas" Width="100" Height="100" Background="White">
                                 <Canvas.Resources>
                                     <Style TargetType="Rectangle">
@@ -65,15 +68,16 @@
                                     </Style>
                                 </Canvas.Resources>
                             </Canvas>
-
+                            <TextBlock Text="Вид слева" Margin="5"/>
                         </StackPanel>
                     </Border>
                 </Viewbox>
                 <Viewbox Grid.Column="2" VerticalAlignment="Top" Stretch="Uniform" Margin="10">
                     <Border Background="WhiteSmoke" Padding="2.5" CornerRadius="4" BorderBrush="#ccc" BorderThickness="1">
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="Вид спереди" Margin="5"/>
+                            
                             <Canvas x:Name="LeftViewCanvas" Width="100" Height="100" Background="White">
+                                
                                 <Canvas.Resources>
                                     <Style TargetType="Rectangle">
                                         <Setter Property="Width" Value="25"/>
@@ -83,7 +87,7 @@
                                     </Style>
                                 </Canvas.Resources>
                             </Canvas>
-
+                            <TextBlock Text="Вид спереди" Margin="5"/>
                         </StackPanel>
                     </Border>
                 </Viewbox>
@@ -96,7 +100,8 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
-
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button         Content="✅ Проверить" Grid.Column="0"
 Margin="5"
